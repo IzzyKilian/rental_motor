@@ -1,0 +1,50 @@
+version: '3.9'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rental_motor_app
+    container_name: rental_motor_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - rental_motor
+
+  webserver:
+    image: nginx:alpine
+    container_name: rental_motor_webserver
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d/
+    networks:
+      - rental_motor
+
+  db:
+    image: mysql:5.7
+    container_name: rental_motor_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: rental_motor
+      MYSQL_USER: root
+      MYSQL_PASSWORD: your_password
+      MYSQL_ROOT_PASSWORD: your_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - rental_motor
+
+networks:
+  rental_motor:
+    driver: bridge
+
+volumes:
+  db_data:
